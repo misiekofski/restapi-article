@@ -1,6 +1,6 @@
 # Project exclude paths
-/war/
-/venv/
+war/
+venv/
 
 # Django #
 *.log

@@ -14,14 +14,43 @@ def api_client():
 
 @pytest.mark.django_db
 def test_user_can_update_his_profile(api_client):
-    user = User.objects.create_user('michal', 'test@scvconsultants.com', 'michalpassword')
-    url = reverse('profile-detail', args=[user.id])
-    response = api_client.get(url)
+    user = User.objects.create_user('michal', 'test@scvconsultants.com', "michalpassword")
+    profile_url = reverse('profile-detail', args=[user.id])
+    user_url = reverse('user-detail', args=[user.id])
+
+    # check that profile was created for created user
+    response = api_client.get(profile_url)
     assert response.status_code == 200
+    assert response.data['user'].endswith(user_url)
+
+    #create bio
+    bio = 'This is test user'
+    location = 'Wroclaw'
+    bio_data = {
+        "user": response.data['user'],
+        "bio": bio,
+        "location": location
+    }
+
+    token_url = reverse('token_obtain_pair')
+    login_data = {
+        "username": user.username,
+        "password": "michalpassword"
+    }
+    # get token
+    token = api_client.post(token_url, login_data, format='json')
+    # check that access token was sent in response
+    assert token.data['access'] is not None
+
+    api_client.credentials(HTTP_AUTHORIZATION='Bearer ' + token.data['access'])
+    response = api_client.put(profile_url, bio_data, format='json')
+    assert response.status_code == 200
+    assert response.data['bio'] == bio
+    assert response.data['location'] == location
 
 
 @pytest.mark.django_db
 def test_user_create_creates_profile():
-    User.objects.create_user('michal', 'test@scvconsultants.com', 'michalpassword')
+    user = User.objects.create_user('michal', 'test@scvconsultants.com', 'michalpassword')
     assert Profile.objects.count() == 1
     assert User.objects.count() == 1
