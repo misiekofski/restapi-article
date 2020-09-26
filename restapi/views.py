@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import viewsets, mixins, permissions
 
+from .permissions import IsProperUserOrReadOnly
 from restapi.models import Profile
 from restapi.serializers import ProfileSerializer, UserSerializer
 
@@ -19,4 +20,4 @@ class ProfileViewSet(viewsets.ModelViewSet, mixins.UpdateModelMixin):
     """
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsProperUserOrReadOnly]
