@@ -24,29 +24,30 @@ def test_user_can_update_his_profile(api_client):
     assert response.data['user'].endswith(user_url)
 
     #create bio
-    bio = 'This is test user'
-    location = 'Wroclaw'
     bio_data = {
         "user": response.data['user'],
-        "bio": bio,
-        "location": location
+        "bio": "This is test user",
+        "location": "Wroclaw"
     }
-
-    token_url = reverse('token_obtain_pair')
+    #create login data as user.password contains now encrypted string
     login_data = {
         "username": user.username,
         "password": "michalpassword"
     }
+
     # get token
+    token_url = reverse('token_obtain_pair')
     token = api_client.post(token_url, login_data, format='json')
     # check that access token was sent in response
     assert token.data['access'] is not None
-
+    # add http authorization header with Bearer prefix
     api_client.credentials(HTTP_AUTHORIZATION='Bearer ' + token.data['access'])
+    # update profile
     response = api_client.put(profile_url, bio_data, format='json')
+    # validate response
     assert response.status_code == 200
-    assert response.data['bio'] == bio
-    assert response.data['location'] == location
+    assert response.data['bio'] == bio_data['bio']
+    assert response.data['location'] == bio_data['location']
 
 
 @pytest.mark.django_db
