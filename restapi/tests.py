@@ -76,4 +76,3 @@ def test_user_should_not_be_able_to_update_other_profile(api_client):
         "location": "Wroclaw"
     }
     response = api_client.put(profile_url, bio_data, format='json')
-    g
